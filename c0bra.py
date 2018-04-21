@@ -20,7 +20,7 @@ BLUE_ICON     = "%s[*]%s" % (fg(56) , attr(0))
 RED_ICON      = "%s[!]%s" % (fg(1)  , attr(0))
 GATEWAY       = netifaces.gateways()["default"][netifaces.AF_INET][0]
 
-def live_hosts():
+def live_hosts(): # SCAN FOR LIVE HOSTS IN NETWORK
 	print("%s LIVE HOSTS SCANNING STARTED") % BLUE_ICON
 	print("%s GATEWAY    : %s")             % (BLUE_ICON, GATEWAY)
 	print("%s LIVE HOSTS : ")               % BLUE_ICON   
