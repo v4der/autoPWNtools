@@ -3,8 +3,8 @@
 WORKING ARGUMENTS:
 --live-hosts
 
-ARGUMENTS TO WRITE:\n
---arp-poisoning\n
---evil-twin\n
+ARGUMENTS TO WRITE:
+--arp-poisoning,
+--evil-twin,
 --rediect-flash
 
