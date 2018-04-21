@@ -63,7 +63,7 @@ def check_root():
 		pass
 
 
-def live_hosts(): # SCAN FOR LIVE HOSTS IN NETWORK
+def live_hosts():
 	all_network = GATEWAY + "/24"
 		
 	print("%s LIVE HOSTS SCANNING STARTED") % BLUE_ICON
