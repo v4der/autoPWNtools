@@ -92,7 +92,10 @@ def help():
 
 
 def check_arguments():
-	if sys.argv[1] == "--live-hosts":
+	if len(sys.argv) < 2:
+		print("%s ERROR : NO ARGUMENTS, TYPE '--help' FOR HELP") % RED_ICON
+	
+	elif sys.argv[1] == "--live-hosts":
 		live_hosts()
 		
 	elif sys.argv[1] == "--arp-poisoning":
@@ -137,12 +140,7 @@ def banner():
 def main():
 	banner()
 	check_root()
-
-	if len(sys.argv) < 2:
-		print("%s ERROR : NO ARGUMENTS, TYPE '--help' FOR HELP") % RED_ICON
-		
-	else:
-		check_arguments()
+	check_arguments()
 
 if __name__ == "__main__":
 	main()
