@@ -134,8 +134,8 @@ def help():
 
 \t%s ARP POISONING ARGUMENTS:
 \t -n = none
-\t -p = pictures sniffer
-\t -w = visited websites sniffer
+\t -p = pictures sniffer          [SOON]
+\t -w = visited websites sniffer  [SOON]
 	""") % (BLUE_ICON,
 			BLUE_ICON)
 
@@ -176,7 +176,7 @@ def banner():
 #                                    #
 #       %sCode by : v4der%s              #
 #                                    #
-#           %sVERSION : 0.1%s            #
+#        %sVERSION : 0.1%s               #
 #                                    #
 ######################################
 """) % (fg(1)  , attr(0),

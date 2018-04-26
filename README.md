@@ -2,9 +2,10 @@
 
 WORKING ARGUMENTS:
 --live-hosts
+--arp-poisoning
 
 DOING:
---arp-poisoning
+--evil-twin
 
 ARGUMENTS TO WRITE:
 --arp-poisoning,
