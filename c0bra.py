@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from wifi import Cell, Scheme
 from colored import fg, attr
 from scapy.all import *
 import netifaces
@@ -159,6 +160,13 @@ def check_arguments():
 		except IndexError:
 			print("%s USAGE : ./c0bra.py <TARGET> <PLUGIN> <INTERFACE>") % RED_ICON
 
+	elif sys.argv[1] == "--networks-scan":
+		try:
+			interface = sys.argv[2]
+			network_scan(interface)
+		except IndexError:
+			print("%s USAGE : ./c0bra.py <INTERFACE>") % RED_ICON
+
 	elif sys.argv[1] == "--help":
 		help()
 		
@@ -174,9 +182,9 @@ def banner():
 #                                    #
 #     %sWirless Pentesting tool%s        #
 #                                    #
-#       %sCode by : v4der%s              #
+#         %sCode by : v4der%s            #
 #                                    #
-#        %sVERSION : 0.1%s               #
+#          %sVERSION : 0.1%s             #
 #                                    #
 ######################################
 """) % (fg(1)  , attr(0),
@@ -185,6 +193,23 @@ def banner():
         fg(125), attr(0))
 
 
+def network_scan(interface):
+	print("%s NETWORK SCAN STARTED") % BLUE_ICON
+	
+	networks = Cell.all(interface)
+	for network in networks:
+		print("%s SSID   : %s") % (BLUE_ICON, network.ssid)
+		print("%s BSSID  : %s") % (BLUE_ICON, network.address)
+		print("%s SIGNAL : %s") % (BLUE_ICON, network.signal)
+		print("%s ENC    : %s") % (BLUE_ICON, network.encryption_type)
+		print("%s CH     : %s") % (BLUE_ICON, network.channel)
+		print("%s MODE   : %s") % (BLUE_ICON, network.mode)
+
+		print("\n\n")
+	
+	print("%s NETWORKS FOUND %s") % (GREEN_ICON, len(networks))
+	
+	
 #####################
 ### PROGRAM START ###
 #####################

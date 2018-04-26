@@ -2,7 +2,8 @@
 
 WORKING ARGUMENTS:
 --live-hosts
---arp-poisoning
+--arp-poisoning [only with plugin '-n', more soon]
+--networks-scan
 
 DOING:
 --evil-twin
