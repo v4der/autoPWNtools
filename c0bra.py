@@ -253,14 +253,17 @@ def clone_network(network, interface):
 			sys.exit(1)
 			
 		elif question == "y":
-			print("%s STARTING ATTACK") % BLUE_ICON
+			print("%s STARTING ATTACK")       % BLUE_ICON
 			print("%s ENABLING MONITOR MODE") % BLUE_ICON 
-						
-			try: # MONITOR MODE
+			
+			
+			#MONITOR MODE
+			try: 
 				call("airmon-ng start %s", shell = True, stdout=open(os.devnull, 'wb')) % interface
 				sys.exit(1)
-			except TypeError:
-				pass
+			except Exception as error:
+				print("%s ERROR : %s") % (RED_ICON, str(error))
+			
 			
 		else:
 			print("%s ERROR : TYPE 'y' or 'n'") % RED_ICON
