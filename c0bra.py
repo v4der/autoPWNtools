@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-#commit test
 from wifi import Cell, Scheme
 from colored import fg, attr
 from subprocess import *
@@ -224,11 +223,12 @@ def network_scan(interface):
 	
 def evil_twin(network_ssid, interface):
 	#CHECK NETWORK
+	print("%s CHECKING NETWORK") % BLUE_ICON
 	networks = Cell.all(interface)
-	
+		
 	for network in networks:
 		if network_ssid == network.ssid:
-			print("%s NETWORK FOUND") % GREEN_ICON
+			print("%s NETWORK FOUND\n") % GREEN_ICON
 			print("%s NETORK INFORMATIONS :") % BLUE_ICON
 			clone_network(network, interface)
 			
@@ -246,32 +246,38 @@ def clone_network(network, interface):
 
 
 	
-	while 1:
-		question = raw_input("\n[?] start attack?[y/n] : ")
-		
-		if question == "n":
-			print("%s EXIT") % RED_ICON
+	question = raw_input("\n[?] start attack?[y/n] : ")	
+	if question == "n":
+		print("%s EXIT") % RED_ICON
+		sys.exit(1)
+			
+			
+	elif question == "y":
+		print("\n%s ENABLING MONITOR MODE") % BLUE_ICON 
+			
+		#MONITOR MODE
+		try:
+			call("airmon-ng start " + interface, shell = True, stdout=open(os.devnull, 'wb')) 
+			print("%s MONITOR MODE ENABLED\n") % GREEN_ICON
+			
+		except Exception as error:
+			print("%s ERROR : %s") % (RED_ICON, str(error))
+			
+		# [...]
+		try:
+			print("%s EVIL TWIN STARTED") % GREEN_ICON
+			time.sleep(60)
+		except KeyboardInterrupt:
+			print("\n%s DISABLING MONITOR MODE") % BLUE_ICON
+			call("airmon-ng stop " + interface + "mon", shell = True, stdout = open(os.devnull, "wb"))
+			print("%s MONITOR MODE DISABLED") % GREEN_ICON
 			sys.exit(1)
 			
-		elif question == "y":
-			print("%s STARTING ATTACK")       % BLUE_ICON
-			print("%s ENABLING MONITOR MODE") % BLUE_ICON 
-			
-			
-			#MONITOR MODE
-			try: 
-				call("airmon-ng start %s", shell = True, stdout=open(os.devnull, 'wb')) % interface
-				sys.exit(1)
-			except Exception as error:
-				print("%s ERROR : %s") % (RED_ICON, str(error))
-			
-			
-		else:
-			print("%s ERROR : TYPE 'y' or 'n'") % RED_ICON
+					
+	else:
+		print("%s ERROR : TYPE 'y' or 'n'") % RED_ICON
+		sys.exit(1)
 	
-	sys.exit(1)
-
-
 #####################
 ### PROGRAM START ###
 #####################
