@@ -50,7 +50,7 @@ def arp_poisoning(target, target_mac, gateway_mac, plugin, interface):
 	
 		
 		
-	#CHECK IF TARGET IS UP
+	#CHEEECK IF TARGET IS UP
 	try:
 		NM.scan(hosts = target, arguments = "-sP")
 			
