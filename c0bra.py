@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+#commit test
 from wifi import Cell, Scheme
 from colored import fg, attr
 from subprocess import *
